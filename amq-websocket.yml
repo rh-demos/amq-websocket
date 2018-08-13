@@ -1,0 +1,179 @@
+template:
+apiVersion: v1
+items:
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: foo
+      group: bar
+      project: test
+    name: broker
+  spec:
+    lookupPolicy:
+      local: false
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: foo
+      group: bar
+      project: test
+    name: broker-amq
+  spec:
+    replicas: 1
+    selector:
+      deploymentConfig: broker-amq
+    strategy:
+      rollingParams:
+        maxSurge: 0
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: foo
+          group: bar
+          project: test
+          deploymentConfig: broker-amq
+        name: broker-amq
+      spec:
+        securityContext: {}
+#        serviceAccount: my-service-account
+#        serviceAccountName: my-account-name
+        containers:
+        - env:
+          - name: MQ_SERIALIZABLE_PACKAGES
+            value: ""
+          - name: AMQ_MESH_DISCOVERY_TYPE
+            value: kube
+          - name: AMQ_MESH_SERVICE_NAME
+            value: broker-amq-tcp
+          - name: AMQ_MESH_SERVICE_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: AMQ_STORAGE_USAGE_LIMIT
+            value: 100 gb
+          envFrom:
+            - secretRef:
+                name: broker
+          image: ' '
+          name: broker-amq
+          ports:
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          - containerPort: 61614
+            name: websocket
+            protocol: TCP
+          - containerPort: 61616
+            name: tcp
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/amq/bin/readinessProbe.sh
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+        terminationGracePeriodSeconds: 60
+    triggers:
+    - imageChangeParams:
+        containerNames:
+        - broker-amq
+        from:
+          kind: ImageStreamTag
+          name: broker:latest
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The broker's WebSocket port.
+    labels:
+      app: foo
+      group: bar
+      project: test
+    name: broker-amq-websocket
+  spec:
+    ports:
+    - port: 80
+      targetPort: 61614
+      name: websocket
+    selector:
+      deploymentConfig: broker-amq
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The broker's OpenWire port.
+    labels:
+      app: foo
+      group: bar
+      project: test
+    name: broker-amq-tcp
+  spec:
+    ports:
+    - port: 61616
+      targetPort: 61616
+      name: openwire
+    selector:
+      deploymentConfig: broker-amq
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    labels:
+      app: foo
+      group: bar
+      project: test
+    name: broker-amq-websocket
+  spec:
+    host: route-to-service
+    path: /ws
+    port:
+      targetPort: websocket
+    tls:
+      termination: edge
+    to:
+      kind: Service
+      name: broker-amq-websocket
+- apiVersion: build.openshift.io/v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: foo
+      group: bar
+      project: test
+    name: broker-s2i
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'broker:latest'
+    source:
+#      contextDir: ctx-dir
+      git:
+        uri: 'https://github.com/rh-demos/amq-websocket.git'
+      type: Git
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          namespace: openshift
+          name: jboss-amq-63:1.2
+      type: Docker
+kind: List
+parameters:
+- description: The app name
+  name: APP_NAME
+  value: foo
+- description: The group name
+  name: GROUP_NAME
+  value: bar
+- description: The project name
+  name: PROJECT_NAME
+  value: test
