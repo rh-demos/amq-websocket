@@ -95,14 +95,14 @@
         <managementContext>
             <managementContext createConnector="false" />
         </managementContext>
-        <!--networkConnectors>
+        <networkConnectors>
             <!--
                 In a full mesh we want messages to travel freely to any broker
                 (i.e. messageTTL="-1") but create demand subscription only to the next connected
                 broker (i.e. consumerTTL="1"). See AMQ-4607.
             -->
             <!-- ##### MESH_CONFIG ##### -->
-        </networkConnectors-->
+        </networkConnectors>
         <plugins>
             <jaasAuthenticationPlugin configuration="activemq-guest"/>
    <authorizationPlugin>
