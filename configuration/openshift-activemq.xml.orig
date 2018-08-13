@@ -39,6 +39,12 @@
 
         <!-- ##### DESTINATIONS ##### -->
 
+        <destinations>
+            <topic physicalName="demo.finance.job" />
+            <topic physicalName="demo.it.request" />
+            <topic physicalName="demo.hr.newhire" />
+        </destinations>
+
         <destinationPolicy>
             <policyMap>
                 <policyEntries>
@@ -116,6 +122,21 @@
 
         <plugins>
             <!-- ##### AUTHENTICATION ##### -->
+            <authorizationPlugin>
+                <map>
+                    <authorizationMap>
+                        <authorizationEntries>
+                            <authorizationEntry queue="&gt;" read="authenticated" write="authenticated" admin="admin" />
+                            <authorizationEntry topic="&gt;" read="authenticated" write="authenticated" admin="admin" />
+                            <authorizationEntry topic="Truck.Position.&gt;" read="user,authenticated" write="authenticated" admin="authenticated" />
+                            <authorizationEntry topic="ActiveMQ.Advisory.&gt;" read="user,authenticated" write="user,authenticated" admin="user,authenticated"/>
+                        </authorizationEntries>
+                        <tempDestinationAuthorizationEntry>
+                            <tempDestinationAuthorizationEntry read="authenticated" write="authenticated" admin="authenticated"/>
+                        </tempDestinationAuthorizationEntry>
+                    </authorizationMap>
+                </map>
+            </authorizationPlugin>
         </plugins>
 
         <!--
@@ -147,9 +168,6 @@
         -->
         <transportConnectors>
             <transportConnector name="openwire" uri="tcp://0.0.0.0:61616?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600" />
-            <transportConnector name="amqp" uri="amqp://0.0.0.0:5672?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600" />
-            <transportConnector name="stomp" uri="stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600" />
-            <transportConnector name="mqtt" uri="mqtt://0.0.0.0:1883?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600" />
             <transportConnector name="websocket" uri="ws://0.0.0.0:61614"/>
         </transportConnectors>
 
@@ -173,3 +191,4 @@
     -->
 
 </beans>
+
