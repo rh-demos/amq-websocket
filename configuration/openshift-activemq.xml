@@ -32,8 +32,8 @@
     -->
     <broker xmlns="http://activemq.apache.org/schema/core" brokerName="${HOSTNAME}" dataDirectory="${activemq.data}" persistent="false" schedulePeriodForDestinationPurge="30000">
         <destinations>
-            <queue physicalName="Truck.Position.From.SwanTruck.Adapter" />
-            <queue physicalName="Truck.Position.To.Postman" />
+            <queue physicalName="queuea" />
+            <queue physicalName="queueb" />
         </destinations>
   
         <destinationPolicy>
