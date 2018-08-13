@@ -1,4 +1,4 @@
-FROM openshift/jboss-amq-63:1.3
+FROM registry.access.redhat.com/jboss-amq-6/amq63-openshift
 
 VOLUME /opt/amq/conf/
 
