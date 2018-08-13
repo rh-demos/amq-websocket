@@ -1,8 +1,7 @@
 # amq-websocket
 ```
 oc new-project test
-oc create secret generic broker --from-env-file=amq.properties
-oc create -f amq-websocket.yml
+oc new-app amq63-basic-custom.yml -p MQ_QUEUES=foo,bar
 ```
 To start the actual build and deploy, do the following commands:
 ```
