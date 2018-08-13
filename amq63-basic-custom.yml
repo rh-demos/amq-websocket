@@ -17,7 +17,6 @@ metadata:
     version: 1.4.8
   creationTimestamp: 2018-06-22T11:42:31Z
   name: amq63-basic-custom
-  namespace: test
   resourceVersion: "1470"
   selfLink: /oapi/v1/namespaces/openshift/templates/amq63-basic
   uid: 591f9c62-7611-11e8-b070-08002766e550
@@ -62,6 +61,20 @@ objects:
     ports:
     - port: 61613
       targetPort: 61613
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-amq
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The broker's WebSocket port.
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-amq-websocket
+  spec:
+    ports:
+    - port: 61614
+      targetPort: 61614
     selector:
       deploymentConfig: ${APPLICATION_NAME}-amq
 - apiVersion: v1
@@ -202,7 +215,7 @@ objects:
     source:
 #      contextDir: ctx-dir
       git:
-        uri: 'https://github.com/rh-demos/amq-websocket.git'
+        uri: ${GIT_REPO}
       type: Git
     strategy:
       sourceStrategy:
@@ -215,8 +228,8 @@ objects:
   metadata:
     labels:
       build: custom-xpaas-amq
+      application: ${APPLICATION_NAME}
     name: amq63-openshift
-    namespace: test
   spec:
     lookupPolicy:
       local: false
@@ -225,7 +238,7 @@ objects:
           openshift.io/imported-from: registry.access.redhat.com/jboss-amq-6/amq63-openshift
         from:
           kind: DockerImage
-          name: registry.access.redhat.com/jboss-amq-6/amq63-openshift
+          name: ${S2I_IMAGE}
         name: latest
         referencePolicy:
           type: Source
@@ -289,3 +302,11 @@ parameters:
   name: IMAGE_STREAM_NAMESPACE
   required: true
   value: openshift
+- description: Git repo, which contains the s2i config
+  displayName: S2I Git Repo
+  name: GIT_REPO
+  value: https://github.com/rh-demos/amq-websocket.git
+- description: S2I image to use for the build
+  displayName: S2I Image
+  name: S2I_IMAGE
+  value: registry.access.redhat.com/jboss-amq-6/amq63-openshift
