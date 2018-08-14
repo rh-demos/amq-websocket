@@ -235,7 +235,7 @@ objects:
       local: false
     tags:
       - annotations:
-          openshift.io/imported-from: registry.access.redhat.com/jboss-amq-6/amq63-openshift
+          openshift.io/imported-from: ${S2I_IMAGE}
         from:
           kind: DockerImage
           name: ${S2I_IMAGE}
